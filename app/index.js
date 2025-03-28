@@ -1,0 +1,305 @@
+import React, { useRef } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  ImageBackground,
+} from "react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedScrollHandler,
+  interpolate,
+  useAnimatedStyle,
+} from "react-native-reanimated";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+
+import { images } from "@/constants/images";
+import Signup from "./sign-up";
+import Login from "./login";
+const Stack = createNativeStackNavigator();
+
+const slides = [
+  {
+    id: 1,
+    title: "Meet Doctors Online",
+    text: "Connect with Specialized Doctors Online for Convenient and Comprehensive Medical Consultations.",
+    image: images.image,
+  },
+  {
+    id: 2,
+    title: "Meet Doctors Online",
+    text: "Connect with Specialized Doctors Online for Convenient and Comprehensive Medical Consultations.",
+    image: images.image1,
+  },
+  {
+    id: 3,
+    title: "Meet Doctors Online",
+    text: "Connect with Specialized Doctors Online for Convenient and Comprehensive Medical Consultations.",
+    image: images.image2,
+  },
+];
+
+const { width, height } = Dimensions.get("window");
+
+const GetStartedScreen = ({ navigation }) => (
+  <View style={styles.container}>
+    <ImageBackground
+      source={images.splash}
+      resizeMethod="auto"
+      style={styles.image}
+    />
+    <TouchableOpacity
+      style={styles.button}
+      onPress={() => navigation.navigate("Onboarding")}
+    >
+      <Text style={styles.buttonText}>Get Started</Text>
+    </TouchableOpacity>
+  </View>
+);
+
+const SlideItem = ({ item, index, scrollX }) => {
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      scrollX.value,
+      [(index - 1) * width, index * width, (index + 1) * width],
+      [0.3, 1, 0.3]
+    ),
+    transform: [
+      {
+        scale: interpolate(
+          scrollX.value,
+          [(index - 1) * width, index * width, (index + 1) * width],
+          [0.8, 1, 0.8]
+        ),
+      },
+    ],
+  }));
+
+  return (
+    <View style={[styles.slide, { width }]}>
+      <Animated.Image
+        source={item.image}
+        style={[styles.slideimage, animatedStyle]}
+        resizeMode="contain"
+      />
+      <View style={styles.sliderText}>
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.subtitle}>{item.text}</Text>
+      </View>
+    </View>
+  );
+};
+
+const PaginationDots = ({ data, scrollX }) => {
+  return (
+    <View style={styles.dotsContainer}>
+      {data.map((_, index) => {
+        const dotStyle = useAnimatedStyle(() => {
+          const scale = interpolate(
+            scrollX.value,
+            [(index - 1) * width, index * width, (index + 1) * width],
+            [0.8, 1.4, 0.8],
+            "clamp"
+          );
+
+          const opacity = interpolate(
+            scrollX.value,
+            [(index - 1) * width, index * width, (index + 1) * width],
+            [0.3, 1, 0.3],
+            "clamp"
+          );
+
+          return {
+            transform: [{ scale }],
+            opacity,
+          };
+        });
+
+        return <Animated.View key={index} style={[styles.dot, dotStyle]} />;
+      })}
+    </View>
+  );
+};
+
+const OnboardingScreen = ({ navigation }) => {
+  const scrollX = useSharedValue(0);
+  const currentIndex = useRef(0);
+
+  const onScroll = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollX.value = event.contentOffset.x;
+      currentIndex.current = Math.round(event.contentOffset.x / width);
+    },
+  });
+
+  const handleNext = () => {
+    if (currentIndex.current < slides.length - 1) {
+      scrollViewRef.current?.scrollToIndex({ index: currentIndex.current + 1 });
+    } else {
+      navigation.replace("Auth");
+    }
+  };
+
+  const scrollViewRef = useRef(null);
+
+  return (
+    <View style={styles.container}>
+      <Animated.FlatList
+        ref={scrollViewRef}
+        data={slides}
+        renderItem={({ item, index }) => (
+          <SlideItem item={item} index={index} scrollX={scrollX} />
+        )}
+        keyExtractor={(item) => item.id.toString()}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+      />
+      <PaginationDots data={slides} scrollX={scrollX} />
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.nextButton}
+          onPress={() => navigation.replace("Auth")}
+        >
+          <Text style={styles.nextText}>Skip</Text>
+        </TouchableOpacity>
+
+        {/* <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+          <Text style={styles.nextText}>Next</Text>
+        </TouchableOpacity> */}
+      </View>
+    </View>
+  );
+};
+const AuthScreen = () => (
+  <View style={styles.logincontainer}>
+    <Login />
+  </View>
+);
+
+export default function Index() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="GetStarted" component={GetStartedScreen} />
+      <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+      <Stack.Screen name="Auth" component={AuthScreen} />
+    </Stack.Navigator>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+  },
+  logincontainer: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 24,
+    textAlign: "center",
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+
+  button: {
+    backgroundColor: "#1C2A3A",
+    padding: 15,
+    borderRadius: 5,
+    marginTop: 20,
+    position: "absolute",
+    bottom: 100,
+    width: 200,
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+    flex: 1,
+    resizeMode: "cover",
+  },
+
+  buttonText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: 500,
+    textAlign: "center",
+  },
+  slide: {
+    flex: 1,
+    gap: 20,
+    // paddingHorizontal: 40,
+  },
+  slideimage: {
+    width: "100%",
+    height: height * 0.6,
+    objectFit: "cover",
+    marginBottom: 40,
+  },
+  sliderText: {
+    paddingHorizontal: 15,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
+    textAlign: "center",
+    color: "#333",
+  },
+  subtitle: {
+    fontSize: 16,
+    textAlign: "center",
+    lineHeight: 24,
+    color: "#666",
+    marginBottom: 40,
+  },
+  buttonContainer: {
+    position: "absolute",
+    bottom: 50,
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 30,
+  },
+  skipButton: {
+    padding: 15,
+  },
+  skipText: {
+    color: "#666",
+    fontSize: 16,
+  },
+  nextButton: {
+    backgroundColor: "#1C2A3A",
+    paddingHorizontal: 30,
+    paddingVertical: 15,
+    borderRadius: 10,
+    width: "100%",
+  },
+  nextText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  dotsContainer: {
+    position: "absolute",
+    bottom: 100,
+    flexDirection: "row",
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#1C2A3A",
+    marginHorizontal: 5,
+  },
+});
