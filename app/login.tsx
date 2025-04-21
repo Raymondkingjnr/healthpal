@@ -6,10 +6,11 @@ import {
   TextInput,
   Pressable,
   Alert,
+  KeyboardAvoidingView,
 } from "react-native";
-import React from "react";
+import React, { useEffect } from "react";
 import { icons } from "@/constants/icons";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { useState } from "react";
 import {
@@ -24,6 +25,35 @@ const Login = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  async function resetPassword() {
+    setIsLoading(true);
+    if (!email) {
+      Alert.alert("Field can not be empty");
+    }
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: "http://localhost:8081",
+    });
+    if (error) Alert.alert(error.message);
+    if (data) Alert.alert("Check your email for reset link!");
+    setIsLoading(false);
+  }
+
+  useEffect(() => {
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session) {
+          setUser(session.user);
+          router.push("/homes");
+        } else {
+          setUser(null);
+        }
+      }
+    );
+    //@ts-ignore
+    return () => subscription.unsubscribe();
+  }, []);
 
   async function signinwithemail() {
     setIsLoading(true);
@@ -31,7 +61,11 @@ const Login = () => {
       email: email,
       password: password,
     });
-    if (error) Alert.alert(error.message);
+    if (error) {
+      Alert.alert(error.message);
+    } else {
+      Alert.alert("Login Successful");
+    }
     setIsLoading(false);
   }
 
@@ -46,72 +80,79 @@ const Login = () => {
     return null;
   }
   return (
-    <View style={styles.container}>
-      <Image source={icons.icon} />
-      <Text style={styles.headertext}>
-        Health<Text style={styles.spantext}>Pal</Text>{" "}
-      </Text>
-      <Text style={styles.welcomtext}>Hi, Welcome Back!</Text>
-      <Text style={[styles.spantext, styles.downtext]}>
-        Hope you’re doing fine.
-      </Text>
-      {/* <View style={styles.inputFlex}> */}
-      <View style={styles.relativeform}>
-        <TextInput
-          placeholder="Your Email"
-          placeholderTextColor="#9CA3AF"
-          style={styles.input}
-          value={email}
-          onChangeText={(text) => setEmail(text)}
-        />
-        <Image source={icons.smsicon} style={styles.icon} />
-      </View>
-      <View style={styles.relativeform}>
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#9CA3AF"
-          secureTextEntry={true}
-          value={password}
-          autoCapitalize={"none"}
-          onChangeText={(text) => setPassword(text)}
-        />
-        <Image source={icons.passwordicon} style={styles.icon} />
-        {/* </View> */}
-      </View>
-      <Pressable
-        style={styles.button}
-        disabled={isLoading}
-        onPress={() => signinwithemail()}
-      >
-        <Text style={styles.buttonText}>Sign In</Text>
-      </Pressable>
-      <View style={styles.flex}>
-        <View style={styles.rltline} />
-        <Text>Or</Text>
-        <View style={styles.rltline} />
-      </View>
-      <Pressable style={styles.googlebtn}>
-        <Image source={icons.googleIcon} />
-        <Text style={[styles.buttonText, styles.googletext]}>
-          Sign in with Google
+    <KeyboardAvoidingView>
+      <View style={styles.container}>
+        <Image source={icons.icon} />
+        <Text style={styles.headertext}>
+          Health<Text style={styles.spantext}>Pal</Text>{" "}
         </Text>
-      </Pressable>
-      <Link href={"/password-reset"} asChild>
-        <Pressable style={styles.forgetpassword}>
-          <Text style={styles.forgetpasswordtext}>Forgot password?</Text>
-        </Pressable>
-      </Link>
-
-      <Link href={"/sign-up"} asChild>
-        <Pressable>
-          <Text style={styles.signupbutton}>
-            Don’t have an account yet?{" "}
-            <Text style={styles.forgetpasswordtext}>Sign up</Text>{" "}
+        <Text style={styles.welcomtext}>Hi, Welcome Back!</Text>
+        <Text style={[styles.spantext, styles.downtext]}>
+          Hope you’re doing fine.
+        </Text>
+        {/* <View style={styles.inputFlex}> */}
+        <View style={styles.relativeform}>
+          <TextInput
+            placeholder="Your Email"
+            placeholderTextColor="#9CA3AF"
+            style={styles.input}
+            value={email}
+            onChangeText={(text) => setEmail(text)}
+          />
+          <Image source={icons.smsicon} style={styles.icon} />
+        </View>
+        <View style={styles.relativeform}>
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#9CA3AF"
+            secureTextEntry={true}
+            value={password}
+            autoCapitalize={"none"}
+            onChangeText={(text) => setPassword(text)}
+          />
+          <Image source={icons.passwordicon} style={styles.icon} />
+          {/* </View> */}
+        </View>
+        <Pressable
+          style={styles.button}
+          disabled={isLoading}
+          onPress={() => signinwithemail()}
+        >
+          <Text style={styles.buttonText}>
+            {isLoading ? "Loading..." : " Sign In"}
           </Text>
         </Pressable>
-      </Link>
-    </View>
+        <View style={styles.flex}>
+          <View style={styles.rltline} />
+          <Text>Or</Text>
+          <View style={styles.rltline} />
+        </View>
+        <Pressable style={styles.googlebtn}>
+          <Image source={icons.googleIcon} />
+          <Text style={[styles.buttonText, styles.googletext]}>
+            Sign in with Google
+          </Text>
+        </Pressable>
+        {/* <Link href={"/password-reset"} asChild> */}
+        <Pressable
+          style={styles.forgetpassword}
+          onPress={() => resetPassword()}
+        >
+          <Text style={styles.forgetpasswordtext}>Forgot password?</Text>
+        </Pressable>
+        {/* </Link> */}
+
+        <Link href={"/sign-up"} asChild>
+          <Pressable>
+            <Text style={styles.signupbutton}>
+              Don’t have an account yet?{" "}
+              <Text style={styles.forgetpasswordtext}>Sign up</Text>{" "}
+            </Text>
+          </Pressable>
+        </Link>
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 

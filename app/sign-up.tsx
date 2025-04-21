@@ -13,6 +13,13 @@ import { icons } from "@/constants/icons";
 import { Link } from "expo-router";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import {
+  Spartan_500Medium,
+  Spartan_600SemiBold,
+  Spartan_700Bold,
+  Spartan_800ExtraBold,
+  useFonts,
+} from "@expo-google-fonts/spartan";
 
 const Signup = () => {
   const [email, setEmail] = useState<string>("");
@@ -37,6 +44,17 @@ const Signup = () => {
     if (!session)
       Alert.alert("Please check your inbox for email verification!");
     setIsLoading(false);
+  }
+
+  const [loading, error] = useFonts({
+    Spartan_500Medium,
+    Spartan_600SemiBold,
+    Spartan_700Bold,
+    Spartan_800ExtraBold,
+  });
+
+  if (!loading && !error) {
+    return null;
   }
   return (
     <View style={styles.container}>
@@ -128,6 +146,7 @@ const styles = StyleSheet.create({
     fontSize: 25,
     fontWeight: "400",
     color: "#6B7280",
+    fontFamily: "Spartan_800ExtraBold",
   },
   spantext: {
     color: "#1C2A3A",
@@ -137,12 +156,14 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     fontSize: 19,
     fontWeight: "300",
+    fontFamily: "Spartan_600SemiBold",
   },
   welcomtext: {
     fontWeight: "semibold",
     color: "#1C2A3A",
     fontSize: 30,
-    paddingTop: 20,
+    paddingVertical: 40,
+    fontFamily: "Spartan_700Bold",
   },
   input: {
     color: "#1C2A3A",
@@ -152,6 +173,7 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     fontSize: 18,
     paddingLeft: 40,
+    fontFamily: "Spartan_500Medium",
     width: "100%",
     fontWeight: "500",
   },
@@ -185,6 +207,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 500,
     textAlign: "center",
+    fontFamily: "Spartan_600SemiBold",
   },
   rltline: {
     height: 1,
@@ -227,7 +250,7 @@ const styles = StyleSheet.create({
   },
   signupbutton: {
     marginTop: 20,
-    fontWeight: "600",
     fontSize: 14,
+    fontFamily: "Spartan_600SemiBold",
   },
 });

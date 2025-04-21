@@ -1,11 +1,11 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
-  ImageBackground,
+  ActivityIndicator,
 } from "react-native";
 import Animated, {
   useSharedValue,
@@ -14,10 +14,19 @@ import Animated, {
   useAnimatedStyle,
 } from "react-native-reanimated";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { supabase } from "@/lib/supabase";
 
+import {
+  useFonts,
+  Spartan_500Medium,
+  Spartan_600SemiBold,
+  Spartan_700Bold,
+  Spartan_800ExtraBold,
+} from "@expo-google-fonts/spartan";
 import { images } from "@/constants/images";
-import Signup from "./sign-up";
+
 import Login from "./login";
+
 const Stack = createNativeStackNavigator();
 
 const slides = [
@@ -43,21 +52,21 @@ const slides = [
 
 const { width, height } = Dimensions.get("window");
 
-const GetStartedScreen = ({ navigation }) => (
-  <View style={styles.container}>
-    <ImageBackground
-      source={images.splash}
-      resizeMethod="auto"
-      style={styles.image}
-    />
-    <TouchableOpacity
-      style={styles.button}
-      onPress={() => navigation.navigate("Onboarding")}
-    >
-      <Text style={styles.buttonText}>Get Started</Text>
-    </TouchableOpacity>
-  </View>
-);
+// const GetStartedScreen = ({ navigation }) => (
+//   <View style={styles.container}>
+//     <ImageBackground
+//       source={images.splash}
+//       resizeMethod="auto"
+//       style={styles.image}
+//     />
+//     <TouchableOpacity
+//       style={styles.button}
+//       onPress={() => navigation.navigate("Onboarding")}
+//     >
+//       <Text style={styles.buttonText}>Get Started</Text>
+//     </TouchableOpacity>
+//   </View>
+// );
 
 const SlideItem = ({ item, index, scrollX }) => {
   const animatedStyle = useAnimatedStyle(() => ({
@@ -77,6 +86,16 @@ const SlideItem = ({ item, index, scrollX }) => {
     ],
   }));
 
+  const [loading, error] = useFonts({
+    Spartan_500Medium,
+    Spartan_600SemiBold,
+    Spartan_700Bold,
+    Spartan_800ExtraBold,
+  });
+
+  if (!loading && !error) {
+    return null;
+  }
   return (
     <View style={[styles.slide, { width }]}>
       <Animated.Image
@@ -134,14 +153,6 @@ const OnboardingScreen = ({ navigation }) => {
     },
   });
 
-  const handleNext = () => {
-    if (currentIndex.current < slides.length - 1) {
-      scrollViewRef.current?.scrollToIndex({ index: currentIndex.current + 1 });
-    } else {
-      navigation.replace("Auth");
-    }
-  };
-
   const scrollViewRef = useRef(null);
 
   return (
@@ -182,9 +193,38 @@ const AuthScreen = () => (
 );
 
 export default function Index() {
+  const [initialRoute, setInitialRoute] = useState(null); // State to control the initial route
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        setInitialRoute("Auth"); // Skip to Auth if session exists
+      } else {
+        setInitialRoute("Onboarding"); // Show Onboarding if no session
+      }
+    };
+
+    checkSession();
+  }, []);
+
+  if (!initialRoute) {
+    // Show a loading indicator while determining the initial route
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#1C2A3A" />
+      </View>
+    );
+  }
+
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="GetStarted" component={GetStartedScreen} />
+    <Stack.Navigator
+      screenOptions={{ headerShown: false }}
+      initialRouteName={initialRoute}
+    >
+      {/* <Stack.Screen name="GetStarted" component={GetStartedScreen} /> */}
       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       <Stack.Screen name="Auth" component={AuthScreen} />
     </Stack.Navigator>
@@ -200,6 +240,11 @@ const styles = StyleSheet.create({
   },
   logincontainer: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   title: {
     fontSize: 24,
@@ -246,6 +291,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
+    fontFamily: "Spartan_600SemiBold",
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
@@ -255,6 +301,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
     lineHeight: 24,
+    fontFamily: "Spartan_500Medium",
     color: "#666",
     marginBottom: 40,
   },
@@ -285,6 +332,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
+    fontFamily: "Spartan_600SemiBold",
   },
   dotsContainer: {
     position: "absolute",

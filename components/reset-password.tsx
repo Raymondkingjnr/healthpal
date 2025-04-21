@@ -12,9 +12,29 @@ import {
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { icons } from "@/constants/icons";
 import { Link } from "expo-router";
+import {
+  Spartan_800ExtraBold,
+  Spartan_700Bold,
+  Spartan_600SemiBold,
+  Spartan_500Medium,
+  Spartan_400Regular,
+  useFonts,
+} from "@expo-google-fonts/spartan";
 
 const Resetpassword = () => {
   const [modalVisible, setModalVisible] = useState(false);
+
+  const [loading, error] = useFonts({
+    Spartan_500Medium,
+    Spartan_600SemiBold,
+    Spartan_700Bold,
+    Spartan_800ExtraBold,
+    Spartan_400Regular,
+  });
+
+  if (!loading && !error) {
+    return null;
+  }
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
@@ -77,7 +97,7 @@ export default Resetpassword;
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 80,
+    marginTop: 70,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
@@ -86,6 +106,7 @@ const styles = StyleSheet.create({
   headertext: {
     textAlign: "center",
     paddingTop: 17,
+    fontFamily: "Spartan_800ExtraBold",
     fontSize: 25,
     fontWeight: "400",
     color: "#6B7280",
@@ -94,19 +115,20 @@ const styles = StyleSheet.create({
     color: "#1C2A3A",
   },
   downtext: {
-    paddingTop: 20,
     color: "#6B7280",
     fontSize: 19,
     fontWeight: "300",
     textAlign: "center",
     paddingHorizontal: 20,
-    paddingBottom: 30,
+    paddingBottom: 20,
+    fontFamily: "Spartan_500Medium",
   },
   welcomtext: {
     fontWeight: "semibold",
     color: "#1C2A3A",
-    fontSize: 30,
-    paddingTop: 50,
+    fontSize: 25,
+    fontFamily: "Spartan_600SemiBold",
+    paddingVertical: 30,
   },
   input: {
     color: "#1C2A3A",
@@ -115,6 +137,7 @@ const styles = StyleSheet.create({
     height: 45,
     borderRadius: 7,
     paddingLeft: 40,
+    fontFamily: "Spartan_500Medium",
     width: "100%",
     fontWeight: "500",
   },
@@ -144,6 +167,7 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   buttonText: {
+    fontFamily: "Spartan_600SemiBold",
     color: "white",
     fontSize: 18,
     fontWeight: 500,
@@ -187,10 +211,12 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
     textAlign: "center",
+    fontFamily: "Spartan_600SemiBold",
   },
   modalText: {
     marginBottom: 15,
     fontSize: 20,
     textAlign: "center",
+    fontFamily: "Spartan_500Medium",
   },
 });
