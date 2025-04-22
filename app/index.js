@@ -52,21 +52,21 @@ const slides = [
 
 const { width, height } = Dimensions.get("window");
 
-// const GetStartedScreen = ({ navigation }) => (
-//   <View style={styles.container}>
-//     <ImageBackground
-//       source={images.splash}
-//       resizeMethod="auto"
-//       style={styles.image}
-//     />
-//     <TouchableOpacity
-//       style={styles.button}
-//       onPress={() => navigation.navigate("Onboarding")}
-//     >
-//       <Text style={styles.buttonText}>Get Started</Text>
-//     </TouchableOpacity>
-//   </View>
-// );
+const GetStartedScreen = ({ navigation }) => (
+  <View style={styles.container}>
+    <ImageBackground
+      source={images.splash}
+      resizeMethod="auto"
+      style={styles.image}
+    />
+    <TouchableOpacity
+      style={styles.button}
+      onPress={() => navigation.navigate("Onboarding")}
+    >
+      <Text style={styles.buttonText}>Get Started</Text>
+    </TouchableOpacity>
+  </View>
+);
 
 const SlideItem = ({ item, index, scrollX }) => {
   const animatedStyle = useAnimatedStyle(() => ({
@@ -224,7 +224,7 @@ export default function Index() {
       screenOptions={{ headerShown: false }}
       initialRouteName={initialRoute}
     >
-      {/* <Stack.Screen name="GetStarted" component={GetStartedScreen} /> */}
+      <Stack.Screen name="GetStarted" component={GetStartedScreen} />
       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       <Stack.Screen name="Auth" component={AuthScreen} />
     </Stack.Navigator>
