@@ -39,7 +39,7 @@ const Layout = () => {
               <Feather
                 name="home"
                 color={`${focused ? (color = "#4B5563") : (color = "#9CA3AF")}`}
-                size={25}
+                size={20}
               />
             ),
           }}
@@ -53,7 +53,7 @@ const Layout = () => {
               <Entypo
                 name="location"
                 color={`${focused ? (color = "#4B5563") : (color = "#9CA3AF")}`}
-                size={25}
+                size={20}
               />
             ),
           }}
@@ -67,7 +67,7 @@ const Layout = () => {
               <FontAwesome
                 name="calendar"
                 color={`${focused ? (color = "#4B5563") : (color = "#9CA3AF")}`}
-                size={25}
+                size={20}
               />
             ),
           }}
@@ -81,7 +81,7 @@ const Layout = () => {
               <FontAwesome5
                 name="user"
                 color={`${focused ? (color = "#4B5563") : (color = "#9CA3AF")}`}
-                size={25}
+                size={20}
               />
             ),
           }}

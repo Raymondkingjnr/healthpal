@@ -10,9 +10,16 @@ import pulmono from "@/assets/images/Pulmono.png";
 import vaccine from "@/assets/images/vaccine.png";
 import gastroenterology from "@/assets/images/Gastroenterology.png";
 import general from "@/assets/images/general.png";
-
+import carousel_1 from "@/assets/images/carosel1.png";
+import hospital_1 from "@/assets/images/hospital_1.png";
+import hospital_2 from "@/assets/images/hospital_2.png";
+import hospital_3 from "@/assets/images/hospital_3.png";
 export const images = {
   dentistry,
+  hospital_1,
+  hospital_2,
+  hospital_3,
+  carousel_1,
   cardiology,
   splash,
   image2,
