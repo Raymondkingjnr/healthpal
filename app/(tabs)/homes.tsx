@@ -6,6 +6,7 @@ import {
   TextInput,
   ImageBackground,
   Dimensions,
+  ScrollView,
 } from "react-native";
 import React, { useRef } from "react";
 import { StyleSheet } from "react-native";
@@ -20,12 +21,6 @@ import Animated, {
   interpolate,
   useAnimatedStyle,
 } from "react-native-reanimated";
-import {
-  Spartan_300Light,
-  Spartan_400Regular,
-  Spartan_500Medium,
-  Spartan_600SemiBold,
-} from "@expo-google-fonts/spartan";
 
 const { width } = Dimensions.get("window");
 
@@ -47,6 +42,29 @@ const carouselData = [
     image: images.carousel_1,
     title: "Quality Healthcare",
     subtitle: "Experience world-class medical services.",
+  },
+];
+const hospitalData = [
+  {
+    id: 1,
+    image: images.hospital_1,
+    title: "sunrise clinic",
+    location: "123 Oak Street, CA 98765.",
+    km: "2.5 km/40min",
+  },
+  {
+    id: 2,
+    image: images.hospital_2,
+    title: "Golden Cardiology Center",
+    location: "555 Bridge Street, Golden Gate.",
+    km: "2.5 km/40min",
+  },
+  {
+    id: 3,
+    image: images.hospital_3,
+    title: "sunrise clinic",
+    location: "123 Oak Street, CA 98765.",
+    km: "2.5 km/40min",
   },
 ];
 
@@ -146,109 +164,149 @@ const Home = () => {
 
   return (
     <SafeAreaView style={styles.home}>
-      <View style={styles.flex_between}>
-        <Text style={styles.name}>
-          {user ? `Welcome, ${getFirstName(user.email)}` : "Loading user..."}
-        </Text>
-        <EvilIcons
-          name="bell"
-          size={35}
-          color="black"
-          style={{
-            fontWeight: "700",
-          }}
-        />
-      </View>
-
-      <View style={styles.relativeform}>
-        <TextInput
-          style={styles.input}
-          placeholder="Search Doctor"
-          placeholderTextColor="#9CA3AF"
-          autoCapitalize={"none"}
-        />
-        <EvilIcons
-          style={styles.icon}
-          name="search"
-          size={30}
-          color="#D1D5DB"
-        />
-      </View>
-
-      <View style={styles.carouselContainer}>
-        <Animated.FlatList
-          data={carouselData}
-          renderItem={({ item, index }) => (
-            <CarouselItem item={item} index={index} />
-          )}
-          keyExtractor={(item) => item.id.toString()}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={onScroll}
-          scrollEventThrottle={16}
-        />
-        <PaginationDots />
-      </View>
-
-      <View style={{ paddingTop: 30 }}>
-        <Text style={[styles.categories]}>Categories</Text>
-      </View>
-
-      <FlatList
-        data={categories}
-        keyExtractor={(item) => item.id.toString()}
-        numColumns={4}
-        columnWrapperStyle={{
-          justifyContent: "space-between",
-          gap: 10,
-          // alignContent: "center",
-          // alignItems: "center",
-          paddingBottom: 5,
-          // marginBottom: 10,
-          marginTop: 15,
-        }}
-        scrollEnabled={false}
-        renderItem={({ item }) => (
-          <View
-            style={{
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <Image source={item.image} style={{ marginBottom: 10 }} />
-            <Text
-              className=" truncate w-[100px]"
-              style={[styles.text, styles.truncatText]}
-            >
-              {item.name.length > 10
-                ? `${item.name.substring(0, 8)}...`
-                : item.name}
-            </Text>
-          </View>
-        )}
-      />
-      <View
-        style={{
-          paddingTop: 40,
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 36 }}
       >
-        <Text style={[styles.categories]}>Nearby Medical Centers</Text>
-        <Text
+        <View style={styles.flex_between}>
+          <Text style={styles.name}>
+            {user ? `Welcome, ${getFirstName(user.email)}` : "Loading user..."}
+          </Text>
+          <EvilIcons
+            name="bell"
+            size={35}
+            color="black"
+            style={{
+              fontWeight: "700",
+            }}
+          />
+        </View>
+
+        <View style={styles.relativeform}>
+          <TextInput
+            style={styles.input}
+            placeholder="Search Doctor"
+            placeholderTextColor="#9CA3AF"
+            autoCapitalize={"none"}
+          />
+          <EvilIcons
+            style={styles.icon}
+            name="search"
+            size={30}
+            color="#D1D5DB"
+          />
+        </View>
+
+        <View style={styles.carouselContainer}>
+          <Animated.FlatList
+            data={carouselData}
+            renderItem={({ item, index }) => (
+              <CarouselItem item={item} index={index} />
+            )}
+            keyExtractor={(item) => item.id.toString()}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={onScroll}
+            scrollEventThrottle={16}
+          />
+          <PaginationDots />
+        </View>
+
+        <View style={{ paddingTop: 30 }}>
+          <Text style={[styles.categories]}>Categories</Text>
+        </View>
+
+        <FlatList
+          data={categories}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={4}
+          columnWrapperStyle={{
+            justifyContent: "space-between",
+            gap: 10,
+            paddingBottom: 5,
+            marginTop: 15,
+          }}
+          scrollEnabled={false}
+          renderItem={({ item }) => (
+            <View
+              style={{
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Image source={item.image} style={{ marginBottom: 10 }} />
+              <Text
+                className=" truncate w-[100px]"
+                style={[styles.text, styles.truncatText]}
+              >
+                {item.name.length > 10
+                  ? `${item.name.substring(0, 8)}...`
+                  : item.name}
+              </Text>
+            </View>
+          )}
+        />
+        <View
           style={{
-            fontFamily: "Spartan_600SemiBold",
-            fontWeight: 400,
-            fontSize: 15,
+            paddingTop: 40,
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
-          See All
-        </Text>
-      </View>
+          <Text style={[styles.categories]}>Nearby Medical Centers</Text>
+          <Text
+            style={{
+              fontFamily: "Spartan_600SemiBold",
+              fontWeight: 400,
+              fontSize: 15,
+            }}
+          >
+            See All
+          </Text>
+        </View>
+        <View>
+          <Animated.FlatList
+            data={hospitalData}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 15 }}
+            renderItem={({ item }) => (
+              <View
+                style={{
+                  flexDirection: "column",
+
+                  marginTop: 10,
+                }}
+              >
+                <Image
+                  source={item.image}
+                  style={{
+                    width: 300,
+                    height: 170,
+                    objectFit: "cover",
+                    borderRadius: 7,
+                  }}
+                />
+                <Text
+                  style={{
+                    fontSize: 18,
+                    fontFamily: "Spartan_600SemiBold",
+                    fontWeight: 600,
+                    paddingTop: 10,
+                    paddingBottom: 8,
+                  }}
+                >
+                  {item.title}
+                </Text>
+              </View>
+            )}
+          />
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -256,11 +314,8 @@ const Home = () => {
 const styles = StyleSheet.create({
   home: {
     backgroundColor: "#FFFF",
-    display: "flex",
-    flexDirection: "column",
-    // height: "100%",
-    paddingHorizontal: 10,
-    fontFamily: "Spartan_600SemiBold",
+    flex: 1,
+    paddingHorizontal: 17,
   },
   text: {
     fontSize: 15,
@@ -312,6 +367,7 @@ const styles = StyleSheet.create({
     height: 182,
     marginTop: 20,
     position: "relative",
+    borderRadius: 8,
   },
   carouselItem: {
     width: width - 20,

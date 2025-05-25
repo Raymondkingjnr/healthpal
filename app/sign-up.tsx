@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import React from "react";
 import { icons } from "@/constants/icons";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import {
@@ -29,21 +29,73 @@ const Signup = () => {
 
   async function signupwithemail() {
     setIsLoading(true);
-    if (!email || !password) {
-      Alert.alert("Field can not be empty");
+    if (!email || !password || !name) {
+      Alert.alert("All fields are required");
+      setIsLoading(false);
+      return;
     }
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-    });
 
-    if (error) Alert.alert(error.message);
-    if (!session)
-      Alert.alert("Please check your inbox for email verification!");
-    setIsLoading(false);
+    try {
+      // Sign up the user
+      const { data: { user }, error: signUpError } = await supabase.auth.signUp({
+        email: email,
+        password: password,
+      });
+
+      if (signUpError) throw signUpError;
+
+      if (user) {
+        // Wait a short moment to ensure the user is properly created
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Create profile entry
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: user.id,
+              full_name: name,
+              is_doctor: false,
+            }
+          ]);
+
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+          // If profile creation fails, we should still allow the user to proceed
+          // as they can create their profile later
+          Alert.alert(
+            "Account Created",
+            "Your account has been created, but there was an issue creating your profile. You can update your profile later.",
+            [
+              {
+                text: "OK",
+                onPress: () => router.replace("/login")
+              }
+            ]
+          );
+          return;
+        }
+
+        Alert.alert(
+          "Success", 
+          "Account created successfully! Please check your email for verification.",
+          [
+            {
+              text: "OK",
+              onPress: () => router.replace("/login")
+            }
+          ]
+        );
+      }
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      Alert.alert(
+        "Error",
+        error.message || "An error occurred during sign up. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   const [loading, error] = useFonts({
@@ -56,25 +108,29 @@ const Signup = () => {
   if (!loading && !error) {
     return null;
   }
+
   return (
     <View style={styles.container}>
       <Image source={icons.icon} />
       <Text style={styles.headertext}>
         Health<Text style={styles.spantext}>Pal</Text>{" "}
       </Text>
-      <Text style={styles.welcomtext}>Hi, Welcome Back!</Text>
+      <Text style={styles.welcomtext}>Create Account</Text>
       <Text style={[styles.spantext, styles.downtext]}>
-        Hope you’re doing fine.
+        Join us to get started with your health journey
       </Text>
-      {/* <View style={styles.inputFlex}> */}
-      {/* <View style={styles.relativeform}>
+
+      <View style={styles.relativeform}>
         <TextInput
-          placeholder="Enter fullname"
+          placeholder="Full Name"
           placeholderTextColor="#9CA3AF"
           style={styles.input}
+          value={name}
+          onChangeText={(text) => setName(text)}
         />
         <Image source={icons.usericon} style={styles.icon} />
-      </View> */}
+      </View>
+
       <View style={styles.relativeform}>
         <TextInput
           autoCapitalize={"none"}
@@ -86,6 +142,7 @@ const Signup = () => {
         />
         <Image source={icons.smsicon} style={styles.icon} />
       </View>
+
       <View style={styles.relativeform}>
         <TextInput
           style={styles.input}
@@ -97,25 +154,28 @@ const Signup = () => {
           onChangeText={(text) => setPassword(text)}
         />
         <Image source={icons.passwordicon} style={styles.icon} />
-        {/* </View> */}
       </View>
 
       <Pressable
-        style={styles.button}
+        style={[styles.button, isLoading && styles.buttonDisabled]}
         onPress={() => signupwithemail()}
         disabled={isLoading}
       >
-        <Text style={styles.buttonText}>Create Account</Text>
+        <Text style={styles.buttonText}>
+          {isLoading ? "Creating Account..." : "Create Account"}
+        </Text>
       </Pressable>
+
       <View style={styles.flex}>
         <View style={styles.rltline} />
         <Text>Or</Text>
         <View style={styles.rltline} />
       </View>
+
       <Pressable style={styles.googlebtn}>
         <Image source={icons.googleIcon} />
         <Text style={[styles.buttonText, styles.googletext]}>
-          Sign in with Google
+          Sign up with Google
         </Text>
       </Pressable>
 
@@ -202,6 +262,9 @@ const styles = StyleSheet.create({
     width: "100%",
     marginTop: 30,
   },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
   buttonText: {
     color: "white",
     fontSize: 18,
@@ -214,7 +277,6 @@ const styles = StyleSheet.create({
     width: "55%",
     backgroundColor: "#979797",
   },
-
   flex: {
     display: "flex",
     flexDirection: "row",
@@ -224,7 +286,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   googlebtn: {
-    backgroundColor: "F#FFF",
+    backgroundColor: "#FFF",
     borderWidth: 1,
     borderColor: "#E5E7EB",
     width: "100%",

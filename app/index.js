@@ -16,6 +16,7 @@ import Animated, {
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { supabase } from "@/lib/supabase";
 
+
 import {
   useFonts,
   Spartan_500Medium,
@@ -226,6 +227,7 @@ export default function Index() {
     >
       <Stack.Screen name="GetStarted" component={GetStartedScreen} />
       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+      
       <Stack.Screen name="Auth" component={AuthScreen} />
     </Stack.Navigator>
   );
