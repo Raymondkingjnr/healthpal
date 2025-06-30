@@ -7,6 +7,7 @@ import {
   Pressable,
   Alert,
   Button,
+  ScrollView,
 } from "react-native";
 import React from "react";
 import { icons } from "@/constants/icons";
@@ -20,12 +21,15 @@ import {
   Spartan_800ExtraBold,
   useFonts,
 } from "@expo-google-fonts/spartan";
+import Entypo from "@expo/vector-icons/Entypo";
+import EvilIcons from "@expo/vector-icons/EvilIcons";
 
 const Signup = () => {
   const [email, setEmail] = useState<string>("");
   const [name, setName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function signupwithemail() {
     setIsLoading(true);
@@ -37,7 +41,10 @@ const Signup = () => {
 
     try {
       // Sign up the user
-      const { data: { user }, error: signUpError } = await supabase.auth.signUp({
+      const {
+        data: { user },
+        error: signUpError,
+      } = await supabase.auth.signUp({
         email: email,
         password: password,
       });
@@ -45,50 +52,25 @@ const Signup = () => {
       if (signUpError) throw signUpError;
 
       if (user) {
-        // Wait a short moment to ensure the user is properly created
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // Create profile entry
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([
-            {
-              id: user.id,
-              full_name: name,
-              is_doctor: false,
-            }
-          ]);
-
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-          // If profile creation fails, we should still allow the user to proceed
-          // as they can create their profile later
-          Alert.alert(
-            "Account Created",
-            "Your account has been created, but there was an issue creating your profile. You can update your profile later.",
-            [
-              {
-                text: "OK",
-                onPress: () => router.replace("/login")
-              }
-            ]
-          );
-          return;
-        }
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
         Alert.alert(
-          "Success", 
+          "Success",
           "Account created successfully! Please check your email for verification.",
           [
             {
               text: "OK",
-              onPress: () => router.replace("/login")
-            }
+              onPress: () =>
+                router.replace({
+                  pathname: "/login",
+                  params: { name }, // Pass the name as a param
+                }),
+            },
           ]
         );
       }
     } catch (error: any) {
-      console.error('Signup error:', error);
+      console.error("Signup error:", error);
       Alert.alert(
         "Error",
         error.message || "An error occurred during sign up. Please try again."
@@ -110,84 +92,103 @@ const Signup = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <Image source={icons.icon} />
-      <Text style={styles.headertext}>
-        Health<Text style={styles.spantext}>Pal</Text>{" "}
-      </Text>
-      <Text style={styles.welcomtext}>Create Account</Text>
-      <Text style={[styles.spantext, styles.downtext]}>
-        Join us to get started with your health journey
-      </Text>
-
-      <View style={styles.relativeform}>
-        <TextInput
-          placeholder="Full Name"
-          placeholderTextColor="#9CA3AF"
-          style={styles.input}
-          value={name}
-          onChangeText={(text) => setName(text)}
-        />
-        <Image source={icons.usericon} style={styles.icon} />
-      </View>
-
-      <View style={styles.relativeform}>
-        <TextInput
-          autoCapitalize={"none"}
-          value={email}
-          onChangeText={(text) => setEmail(text)}
-          placeholder="Your Email"
-          placeholderTextColor="#9CA3AF"
-          style={styles.input}
-        />
-        <Image source={icons.smsicon} style={styles.icon} />
-      </View>
-
-      <View style={styles.relativeform}>
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#9CA3AF"
-          secureTextEntry={true}
-          value={password}
-          autoCapitalize={"none"}
-          onChangeText={(text) => setPassword(text)}
-        />
-        <Image source={icons.passwordicon} style={styles.icon} />
-      </View>
-
-      <Pressable
-        style={[styles.button, isLoading && styles.buttonDisabled]}
-        onPress={() => signupwithemail()}
-        disabled={isLoading}
-      >
-        <Text style={styles.buttonText}>
-          {isLoading ? "Creating Account..." : "Create Account"}
+    <ScrollView>
+      <View style={styles.container}>
+        <Image source={icons.icon} />
+        <Text style={styles.headertext}>
+          Health<Text style={styles.spantext}>Pal</Text>{" "}
         </Text>
-      </Pressable>
-
-      <View style={styles.flex}>
-        <View style={styles.rltline} />
-        <Text>Or</Text>
-        <View style={styles.rltline} />
-      </View>
-
-      <Pressable style={styles.googlebtn}>
-        <Image source={icons.googleIcon} />
-        <Text style={[styles.buttonText, styles.googletext]}>
-          Sign up with Google
+        <Text style={styles.welcomtext}>Create Account</Text>
+        <Text style={[styles.spantext, styles.downtext]}>
+          Join us to get started with your health journey
         </Text>
-      </Pressable>
 
-      <Link href={"/login"} asChild>
-        <Pressable>
-          <Text style={styles.signupbutton}>
-            Already have an account?{" "}
-            <Text style={styles.forgetpasswordtext}>Sign in</Text>{" "}
+        <View style={styles.relativeform}>
+          <TextInput
+            placeholder="Full Name"
+            placeholderTextColor="#9CA3AF"
+            style={styles.input}
+            value={name}
+            onChangeText={(text) => setName(text)}
+          />
+          <Entypo style={styles.icon} name="user" size={15} color="black" />
+        </View>
+
+        <View style={styles.relativeform}>
+          <TextInput
+            autoCapitalize={"none"}
+            value={email}
+            onChangeText={(text) => setEmail(text)}
+            placeholder="Your Email"
+            placeholderTextColor="#9CA3AF"
+            style={styles.input}
+          />
+          <Entypo name="mail" style={styles.icon} size={15} color="black" />
+        </View>
+
+        <View style={styles.relativeform}>
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#9CA3AF"
+            secureTextEntry={showPassword ? false : true}
+            value={password}
+            autoCapitalize={"none"}
+            onChangeText={(text) => setPassword(text)}
+          />
+          <Entypo style={styles.icon} name="lock" size={15} color="black" />
+          {!showPassword ? (
+            <Entypo
+              name="eye-with-line"
+              style={styles.password}
+              size={25}
+              color="black"
+              onPress={() => setShowPassword((prev) => !prev)}
+            />
+          ) : (
+            <Entypo
+              name="eye"
+              style={styles.password}
+              size={25}
+              color="black"
+              onPress={() => setShowPassword((prev) => !prev)}
+            />
+          )}
+        </View>
+
+        <Pressable
+          style={[styles.button, isLoading && styles.buttonDisabled]}
+          onPress={() => signupwithemail()}
+          disabled={isLoading}
+        >
+          <Text style={styles.buttonText}>
+            {isLoading ? "Creating Account..." : "Create Account"}
           </Text>
         </Pressable>
-      </Link>
-    </View>
+
+        <View style={styles.flex}>
+          <View style={styles.rltline} />
+          <Text>Or</Text>
+          <View style={styles.rltline} />
+        </View>
+
+        <Pressable style={styles.googlebtn}>
+          <Image source={icons.googleIcon} />
+          <Text style={[styles.buttonText, styles.googletext]}>
+            Sign up with Google
+          </Text>
+        </Pressable>
+
+        <Link href={"/login"} asChild>
+          <Pressable>
+            <Text style={styles.signupbutton}>
+              Already have an account?{" "}
+              <Text style={styles.forgetpasswordtext}>Sign in</Text>{" "}
+            </Text>
+          </Pressable>
+        </Link>
+      </View>
+    </ScrollView>
   );
 };
 
@@ -198,7 +199,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     alignContent: "center",
     alignItems: "center",
-    marginTop: 70,
+    marginTop: 60,
   },
   headertext: {
     textAlign: "center",
@@ -212,9 +213,10 @@ const styles = StyleSheet.create({
     color: "#1C2A3A",
   },
   downtext: {
-    paddingTop: 20,
+    paddingTop: 0,
     color: "#6B7280",
     fontSize: 19,
+    textAlign: "center",
     fontWeight: "300",
     fontFamily: "Spartan_600SemiBold",
   },
@@ -254,6 +256,11 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 14,
     left: 10,
+  },
+  password: {
+    position: "absolute",
+    top: 9,
+    right: 15,
   },
   button: {
     backgroundColor: "#1C2A3A",

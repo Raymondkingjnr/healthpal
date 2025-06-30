@@ -7,20 +7,16 @@ import {
   ImageBackground,
   Dimensions,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { StyleSheet } from "react-native";
 import { supabase } from "@/lib/supabase";
 import { images } from "@/constants/images";
 import { categories } from "@/constants/data";
 import EvilIcons from "@expo/vector-icons/EvilIcons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Animated, {
-  useSharedValue,
-  useAnimatedScrollHandler,
-  interpolate,
-  useAnimatedStyle,
-} from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 
 const { width } = Dimensions.get("window");
 
@@ -69,98 +65,31 @@ const hospitalData = [
 ];
 
 const Home = () => {
-  const [user, setUser] = React.useState<User>();
-  const scrollX = useSharedValue(0);
+  // const [user, setUser] = React.useState<User>();
+  const [profile, setProfile] = useState<any>(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
 
-  React.useEffect(() => {
-    const fetchUser = async () => {
-      const { data, error } = await supabase.auth.getUser();
-      if (!error) {
-        setUser(data?.user);
+  useEffect(() => {
+    const fetchProfile = async () => {
+      setLoadingProfile(true);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+        if (!error) setProfile(data);
       }
+      setLoadingProfile(false);
     };
-    fetchUser();
+    fetchProfile();
   }, []);
 
-  function getFirstName(email: string | undefined) {
-    if (!email) return "User";
-    const namePart = email.split("@")[0];
-    const firstName = namePart.split(".")[0];
-    return firstName.charAt(0).toUpperCase() + firstName.slice(1);
-  }
-
-  const onScroll = useAnimatedScrollHandler({
-    onScroll: (event) => {
-      scrollX.value = event.contentOffset.x;
-    },
-  });
-
-  const CarouselItem = ({
-    item,
-    index,
-  }: {
-    item: { image: any; title: string; subtitle: string };
-    index: number;
-  }) => {
-    const animatedStyle = useAnimatedStyle(() => {
-      const scale = interpolate(
-        scrollX.value,
-        [(index - 1) * width, index * width, (index + 1) * width],
-        [0.8, 1, 0.8]
-      );
-      const opacity = interpolate(
-        scrollX.value,
-        [(index - 1) * width, index * width, (index + 1) * width],
-        [0.5, 1, 0.5]
-      );
-      return {
-        transform: [{ scale }],
-        opacity,
-      };
-    });
-
-    return (
-      <Animated.View style={[styles.carouselItem, animatedStyle]}>
-        <ImageBackground
-          source={item.image}
-          resizeMethod="auto"
-          style={styles.carouselImage}
-        >
-          <Text style={styles.carouselTitle}>{item.title}</Text>
-          <Text style={styles.carouselSubtitle}>{item.subtitle}</Text>
-        </ImageBackground>
-      </Animated.View>
-    );
-  };
-
-  const PaginationDots = () => {
-    return (
-      <View style={styles.paginationContainer}>
-        {carouselData.map((_, index) => {
-          const dotStyle = useAnimatedStyle(() => {
-            const scale = interpolate(
-              scrollX.value,
-              [(index - 1) * width, index * width, (index + 1) * width],
-              [0.8, 1.4, 0.8],
-              "clamp"
-            );
-            const opacity = interpolate(
-              scrollX.value,
-              [(index - 1) * width, index * width, (index + 1) * width],
-              [0.3, 1, 0.3],
-              "clamp"
-            );
-            return {
-              transform: [{ scale }],
-              opacity,
-            };
-          });
-
-          return <Animated.View key={index} style={[styles.dot, dotStyle]} />;
-        })}
-      </View>
-    );
-  };
+  if (loadingProfile) return <ActivityIndicator style={{ flex: 1 }} />;
 
   return (
     <SafeAreaView style={styles.home}>
@@ -170,7 +99,7 @@ const Home = () => {
       >
         <View style={styles.flex_between}>
           <Text style={styles.name}>
-            {user ? `Welcome, ${getFirstName(user.email)}` : "Loading user..."}
+            {profile ? `Welcome, ${profile?.full_name}` : ""}
           </Text>
           <EvilIcons
             name="bell"
@@ -195,22 +124,6 @@ const Home = () => {
             size={30}
             color="#D1D5DB"
           />
-        </View>
-
-        <View style={styles.carouselContainer}>
-          <Animated.FlatList
-            data={carouselData}
-            renderItem={({ item, index }) => (
-              <CarouselItem item={item} index={index} />
-            )}
-            keyExtractor={(item) => item.id.toString()}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onScroll={onScroll}
-            scrollEventThrottle={16}
-          />
-          <PaginationDots />
         </View>
 
         <View style={{ paddingTop: 30 }}>
@@ -329,6 +242,7 @@ const styles = StyleSheet.create({
   name: {
     fontFamily: "Spartan_600SemiBold",
     paddingTop: 7,
+    textTransform: "capitalize",
   },
   input: {
     color: "#1C2A3A",
@@ -370,7 +284,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   carouselItem: {
-    width: width - 20,
+    width: width,
     height: 182,
   },
   carouselImage: {
